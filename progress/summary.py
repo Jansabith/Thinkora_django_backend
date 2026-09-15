@@ -44,10 +44,14 @@ def build_progress_overview(student, topics):
     records = QuestionProgress.objects.filter(student=student)
     counts_by_topic = count_progress_by_topic(records)
 
+    from .models import TopicProgress
+    topic_progress_qs = TopicProgress.objects.filter(student=student)
+    topic_progress_map = {p.topic_id: p for p in topic_progress_qs}
+
+    # Fetch ALL topics for the roadmap, not just ones with questions
     topics_with_questions = (
         topics.select_related('course')
         .annotate(question_count=Count('questions'))
-        .filter(question_count__gt=0)
         .order_by('course__title', 'course_id', 'order', 'id')
     )
 
@@ -67,8 +71,19 @@ def build_progress_overview(student, topics):
                 'topics': [],
             }
         course = courses[topic.course_id]
+        
+        t_prog = topic_progress_map.get(topic.id)
+        
         course['topics'].append(
-            {'id': topic.id, 'title': topic.title, 'order': topic.order, 'question_count': topic.question_count, **counts}
+            {
+                'id': topic.id, 
+                'title': topic.title, 
+                'order': topic.order, 
+                'question_count': topic.question_count, 
+                'is_completed': t_prog.is_completed if t_prog else False,
+                'admin_unlocked': t_prog.admin_unlocked if t_prog else False,
+                **counts
+            }
         )
         course['question_count'] += topic.question_count
         for key in EMPTY_COUNTS:

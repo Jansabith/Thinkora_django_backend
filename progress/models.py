@@ -96,3 +96,30 @@ class QuestionProgress(models.Model):
         self.resolved_by = admin
         self.resolved_at = timezone.now()
         self.reply_seen = False
+
+
+class TopicProgress(models.Model):
+    """
+    Tracks if a student has completed a topic (Roadmap feature)
+    and if an admin has manually unlocked it.
+    """
+    student = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='topic_progress',
+    )
+    topic = models.ForeignKey('courses.Topic', on_delete=models.CASCADE, related_name='progress')
+    
+    is_completed = models.BooleanField(default=False)
+    admin_unlocked = models.BooleanField(default=False)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['student', 'topic'], name='one_progress_per_student_topic'),
+        ]
+
+    def __str__(self):
+        return f'{self.student} - topic {self.topic_id} (completed: {self.is_completed})'

@@ -45,6 +45,7 @@ class Topic(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='topics')
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True, help_text='A short summary of what this topic covers.')
+    syllabus_points = models.JSONField(default=list, blank=True, help_text='A list of bullet points covering the subtopics.')
     order = models.PositiveIntegerField(default=0, help_text='Smaller numbers are shown first.')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

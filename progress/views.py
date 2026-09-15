@@ -223,3 +223,18 @@ def my_calendar(request):
         .order_by()
     )
     return Response({'year': year, 'month': month, 'days': {row['day'].isoformat(): row['count'] for row in rows}})
+
+
+@api_view(['POST'])
+@permission_classes([IsStudent])
+def mark_topic_completed(request, topic_id):
+    """POST /api/progress/topics/<topic_id>/complete/ -> mark a roadmap topic as finished."""
+    from .models import TopicProgress
+    
+    topic = get_object_or_404(get_visible_topics(request.user), pk=topic_id)
+    progress, _ = TopicProgress.objects.get_or_create(student=request.user, topic=topic)
+    
+    progress.is_completed = True
+    progress.save()
+    
+    return Response({'message': 'Topic marked as complete.'})

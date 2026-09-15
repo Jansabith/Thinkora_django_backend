@@ -143,3 +143,32 @@ def student_progress_overview(request, pk):
     student = get_object_or_404(User, pk=pk, role=User.Role.STUDENT)
     overview = build_progress_overview(student, Topic.objects.all())
     return Response({'student': StudentSerializer(student).data, **overview})
+
+
+@api_view(['POST'])
+@permission_classes([CanManageStudents])
+def unlock_topic(request, student_id, topic_id):
+    """
+    POST /api/admin/students/<student_id>/topics/<topic_id>/unlock/
+    {"unlock": true} -> manually unlocks the topic for the student (or false to relock)
+    """
+    from .models import TopicProgress
+    
+    student = get_object_or_404(User, pk=student_id, role=User.Role.STUDENT)
+    topic = get_object_or_404(Topic, pk=topic_id)
+    
+    unlock = request.data.get('unlock', True)
+    
+    progress, _ = TopicProgress.objects.get_or_create(student=student, topic=topic)
+    progress.admin_unlocked = unlock
+    progress.save()
+    
+    action = 'unlocked' if unlock else 'relocked'
+    log_activity(
+        request.user,
+        ActivityLog.Kind.CONTENT,
+        f'Topic "{topic.title}" was {action} for {student.display_name}',
+        f'/admin/students/{student.id}',
+    )
+    
+    return Response({'message': f'Topic successfully {action}.'})
