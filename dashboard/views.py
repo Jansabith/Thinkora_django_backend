@@ -54,9 +54,9 @@ def student_dashboard(request):
     summary = overview['summary']
 
     topics = [topic for course in courses for topic in course['topics']]
-    topics_completed = sum(1 for topic in topics if topic['done_count'] >= topic['question_count'])
-    topics_in_progress = sum(1 for topic in topics if 0 < topic['done_count'] < topic['question_count'])
-    courses_completed = sum(1 for course in courses if course['done_count'] >= course['question_count'])
+    topics_completed = sum(1 for topic in topics if topic.get('is_completed', False))
+    topics_in_progress = sum(1 for topic in topics if not topic.get('is_completed', False) and topic.get('done_count', 0) > 0)
+    courses_completed = sum(1 for course in courses if course['question_count'] > 0 and course['done_count'] >= course['question_count'])
 
     records = QuestionProgress.objects.filter(student=student)
     last_activity_by_course = dict(
