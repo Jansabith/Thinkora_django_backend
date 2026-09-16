@@ -126,6 +126,18 @@ else:
     }
 
 
+# Cache
+# By default, Django uses local-memory cache. In production with multiple Gunicorn workers, 
+# local-memory cache is NOT shared between workers, causing chat messages to randomly disappear.
+# FileBasedCache uses a folder on the server's hard drive so all workers share the same data.
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': BASE_DIR / '.django_cache',
+    }
+}
+
+
 # Password validation
 # https://docs.djangoproject.com/en/6.1/ref/settings/#auth-password-validators
 
