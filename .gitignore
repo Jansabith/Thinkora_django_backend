@@ -20,6 +20,9 @@ db.sqlite3-journal
 staticfiles/
 media/
 
+# File-based cache (chat messages, online presence) - regenerated at runtime
+.django_cache/
+
 # IDE
 .vscode/
 .idea/
