@@ -276,7 +276,7 @@ def leaderboard(request):
     """
     period = request.query_params.get('period', 'all')
     if period not in LEADERBOARD_PERIODS:
-        raise ValidationError({'period': 'Choose week, month or all.'})
+        raise ValidationError({'period': f'Choose one of: {", ".join(LEADERBOARD_PERIODS)}.'})
 
     course_id = read_id(request.query_params, 'course')
     if course_id:

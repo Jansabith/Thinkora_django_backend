@@ -271,7 +271,7 @@ ACHIEVEMENTS = [
 ]
 
 
-LEADERBOARD_PERIODS = ('week', 'month', 'all')
+LEADERBOARD_PERIODS = ('week', 'last_week', 'month', 'all')
 
 
 def build_leaderboard(viewer, period='all', course_id=None, limit=10):
@@ -290,9 +290,12 @@ def build_leaderboard(viewer, period='all', course_id=None, limit=10):
     )
 
     now = timezone.localtime()
+    this_monday = (now - timedelta(days=now.weekday())).replace(hour=0, minute=0, second=0, microsecond=0)
     if period == 'week':
-        monday = now - timedelta(days=now.weekday())
-        done = done.filter(done_at__gte=monday.replace(hour=0, minute=0, second=0, microsecond=0))
+        done = done.filter(done_at__gte=this_monday)
+    elif period == 'last_week':
+        # The week that just finished: Monday 00:00 up to (but not including) this Monday 00:00.
+        done = done.filter(done_at__gte=this_monday - timedelta(days=7), done_at__lt=this_monday)
     elif period == 'month':
         done = done.filter(done_at__gte=now.replace(day=1, hour=0, minute=0, second=0, microsecond=0))
 
