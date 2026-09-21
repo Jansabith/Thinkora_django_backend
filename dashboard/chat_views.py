@@ -24,6 +24,8 @@ def chat_sync(request):
         'id': user.id,
         'name': user.display_name,
         'role': user.role,
+        'avatar_color': user.avatar_color,
+        'avatar_icon': user.avatar_icon,
         'last_seen': now
     }
     
@@ -33,7 +35,14 @@ def chat_sync(request):
         if now - data['last_seen'] < ONLINE_TIMEOUT:
             cleaned_online_users[uid] = data
             if uid != user.id:
-                active_users.append({'id': data['id'], 'name': data['name'], 'role': data['role']})
+                active_users.append({
+                    'id': data['id'],
+                    'name': data['name'],
+                    'role': data['role'],
+                    # .get(): people already in the cache from before this feature have no avatar yet.
+                    'avatar_color': data.get('avatar_color', ''),
+                    'avatar_icon': data.get('avatar_icon', ''),
+                })
                 
     cache.set('chat_online_users', cleaned_online_users, timeout=ONLINE_TIMEOUT * 2)
     

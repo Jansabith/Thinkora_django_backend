@@ -1,6 +1,13 @@
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
 
+# Avatar choices. Stored as short ASCII keys; React turns them into a colour and a picture.
+AVATAR_COLORS = ['indigo', 'violet', 'teal', 'rose', 'amber', 'emerald', 'sky', 'slate']
+AVATAR_ICONS = [
+    'initials', 'fox', 'panda', 'owl', 'penguin', 'turtle',
+    'lion', 'whale', 'unicorn', 'rocket', 'star', 'flame', 'sprout',
+]
+
 
 class LmsUserManager(UserManager):
     """
@@ -60,6 +67,20 @@ class User(AbstractUser):
     )
     reviewed_at = models.DateTimeField(null=True, blank=True)
     
+    # How this user's round picture looks. Empty = the old automatic colour from their name.
+    avatar_color = models.CharField(
+        max_length=20,
+        blank=True,
+        choices=[(name, name.title()) for name in AVATAR_COLORS],
+        help_text='Background colour of the round profile picture.',
+    )
+    avatar_icon = models.CharField(
+        max_length=20,
+        blank=True,
+        choices=[(name, name.title()) for name in AVATAR_ICONS],
+        help_text='Picture inside the avatar. "initials" shows the letters of the name.',
+    )
+
     allowed_courses = models.ManyToManyField(
         'courses.Course',
         blank=True,

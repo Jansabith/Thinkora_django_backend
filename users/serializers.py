@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 
-from .models import User
+from .models import AVATAR_COLORS, AVATAR_ICONS, User
 
 
 def check_password_strength(password, user, field_name='password'):
@@ -41,6 +41,8 @@ class UserSerializer(serializers.ModelSerializer):
             'last_name',
             'role',
             'access_status',
+            'avatar_color',
+            'avatar_icon',
             'can_manage_students',
             'can_manage_content',
             'date_joined',
@@ -109,11 +111,22 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email']
+        fields = ['first_name', 'last_name', 'email', 'avatar_color', 'avatar_icon']
         extra_kwargs = {'email': {'required': True, 'allow_blank': False}}
 
     def validate_email(self, value):
         return check_email_is_free(value, current_user=self.instance)
+
+    def validate_avatar_color(self, value):
+        # Empty means "go back to the automatic colour made from my name".
+        if value and value not in AVATAR_COLORS:
+            raise serializers.ValidationError(f'Choose one of: {", ".join(AVATAR_COLORS)}.')
+        return value
+
+    def validate_avatar_icon(self, value):
+        if value and value not in AVATAR_ICONS:
+            raise serializers.ValidationError(f'Choose one of: {", ".join(AVATAR_ICONS)}.')
+        return value
 
 
 class ChangePasswordSerializer(serializers.Serializer):
@@ -145,6 +158,8 @@ class StudentSerializer(serializers.ModelSerializer):
             'last_name',
             'access_status',
             'is_active',
+            'avatar_color',
+            'avatar_icon',
             'request_message',
             'whatsapp_number',
             'allowed_courses',

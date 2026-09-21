@@ -178,6 +178,8 @@ def build_top_students(limit):
             'id': row['student'],
             'name': students[row['student']].display_name,
             'username': students[row['student']].username,
+            'avatar_color': students[row['student']].avatar_color,
+            'avatar_icon': students[row['student']].avatar_icon,
             'done_count': row['done'],
         }
         for row in rows
@@ -326,7 +328,14 @@ def build_leaderboard(viewer, period='all', course_id=None, limit=10):
     students = User.objects.in_bulk(student_ids)
 
     def describe(row):
-        return {**row, 'name': students[row['student_id']].display_name, 'is_me': row['student_id'] == viewer.id}
+        student = students[row['student_id']]
+        return {
+            **row,
+            'name': student.display_name,
+            'avatar_color': student.avatar_color,
+            'avatar_icon': student.avatar_icon,
+            'is_me': row['student_id'] == viewer.id,
+        }
 
     me = None
     if viewer.is_student:
@@ -341,6 +350,8 @@ def build_leaderboard(viewer, period='all', course_id=None, limit=10):
                 'student_id': viewer.id,
                 'done_count': 0,
                 'name': viewer.display_name,
+                'avatar_color': viewer.avatar_color,
+                'avatar_icon': viewer.avatar_icon,
                 'is_me': True,
                 'to_next_rank': 1,
             }
