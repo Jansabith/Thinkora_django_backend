@@ -14,6 +14,7 @@ from activity.models import ActivityLog
 from activity.services import log_activity
 
 from .models import User
+from .notifications import notify_new_student
 from .serializers import (
     ChangePasswordSerializer,
     LoginSerializer,
@@ -44,6 +45,9 @@ def request_access(request):
         f'New access request from {student.display_name}',
         f'/admin/students/{student.id}',
     )
+    # Tell the admins on WhatsApp. Runs in the background, so the student does
+    # not wait, and a failure here never stops the registration.
+    notify_new_student(student)
     return Response(
         {'detail': 'Your request has been sent. You can log in after an admin approves it.'},
         status=status.HTTP_201_CREATED,
